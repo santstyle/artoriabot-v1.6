@@ -229,7 +229,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.toimage': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
-                    await toimageCommand(sock, quotedMessage, chatId);
+                    await toimageCommand(sock, quotedMessage, chatId, senderId, ['toimage']);
                 } else {
                     await sock.sendMessage(chatId, { text: 'Balas stiker dengan command .toimage untuk mengonversinya.' });
                 }
