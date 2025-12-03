@@ -2,19 +2,17 @@ const settings = require('../settings');
 
 async function menuCommand(sock, chatId, message) {
     const menuMessage = `
-👑 *${settings.botName || 'Artoria Bot'}*  
-Version: ${settings.version || '1.2'}  
+👑 *${settings.botName || 'ARTORIA BOT'}*  
+Version: ${settings.version || '1.6'}  
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📖 *About Bot*  
-Artoria Bot adalah bot WhatsApp multifungsi untuk membantu aktivitas grup & personal.  
-Nama "Artoria" diambil dari karakter *Artoria Pendragon* dari seri Fate.  
+*DESCRIPTION*
+Artoria Bot is a multifunctional WhatsApp bot designed to assist with group and personal activities.
+The name "Artoria" is inspired by the character Artoria Pendragon from the Fate series.
 
-Untuk menghubungi owner bisa gunakan command *.owner*  
-atau langsung chat *SantStyle* jika ada di grup yang sama.  
+To contact the owner, you can use the command .owner
+or simply chat with SantStyle if they are in the same group.
 
-Berikut menu command yang tersedia di *Artoria Bot*:  
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Here are the available command menus in Artoria Bot:
 
 *LANGUAGE*
 • .setlang id
