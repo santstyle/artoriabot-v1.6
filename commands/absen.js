@@ -1,127 +1,64 @@
-const fs = require('fs');
-const path = require('path');
+const absenSessions = {}; // simpan data absen per grup
 
-// Path to absen data file
-const absenDataPath = path.join(__dirname, '../data/absen.json');
+async function startAbsen(sock, m, title = "Daftar Absen") {
+    const groupId = m.key.remoteJid;
 
-// Ensure data directory exists
-const dataDir = path.dirname(absenDataPath);
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Initialize absen data if not exists
-if (!fs.existsSync(absenDataPath)) {
-    fs.writeFileSync(absenDataPath, JSON.stringify({}, null, 2));
-}
-
-async function startAbsen(sock, message, text) {
-    try {
-        const chatId = message.key.remoteJid;
-        const data = JSON.parse(fs.readFileSync(absenDataPath, 'utf8'));
-
-        if (data[chatId]?.active) {
-            await sock.sendMessage(chatId, { text: 'Absen sudah aktif. Gunakan .finishabsen untuk mengakhiri.' });
-            return;
-        }
-
-        const title = text.trim() || 'Absen';
-        data[chatId] = {
-            active: true,
-            title: title,
-            participants: [],
-            startTime: new Date().toISOString()
-        };
-
-        fs.writeFileSync(absenDataPath, JSON.stringify(data, null, 2));
-
-        await sock.sendMessage(chatId, {
-            text: `✅ *ABSEN DIMULAI*\n\n title}*\n\nKirim *.absen [nama]* untuk absen\nKirim *.finishabsen* untuk mengakhiri absen`
-        });
-
-    } catch (error) {
-        console.error('Error in startAbsen:', error);
-        await sock.sendMessage(message.key.remoteJid, { text: 'Terjadi kesalahan saat memulai absen.' });
+    if (!groupId.endsWith("@g.us")) {
+        return sock.sendMessage(groupId, { text: "Fitur absen hanya bisa dipakai di grup." }, { quoted: m });
     }
+
+    absenSessions[groupId] = { list: [], active: true, title: title.trim() || "Daftar Absen" };
+
+    await sock.sendMessage(groupId, { text: `✅ Absen "${absenSessions[groupId].title}" dimulai! Silakan isi dengan \`.absen <nama/teks>\`` }, { quoted: m });
 }
 
-async function addAbsen(sock, message, text) {
-    try {
-        const chatId = message.key.remoteJid;
-        const senderId = message.key.participant || message.key.remoteJid;
-        const data = JSON.parse(fs.readFileSync(absenDataPath, 'utf8'));
+async function addAbsen(sock, m, text) {
+    const groupId = m.key.remoteJid;
 
-        if (!data[chatId]?.active) {
-            await sock.sendMessage(chatId, { text: 'Tidak ada absen yang aktif. Gunakan .startabsen untuk memulai.' });
-            return;
-        }
-
-        const name = text.trim() || 'Anonymous';
-        const participantIndex = data[chatId].participants.findIndex(p => p.id === senderId);
-
-        if (participantIndex > -1) {
-            // Update existing participant
-            data[chatId].participants[participantIndex].name = name;
-            data[chatId].participants[participantIndex].time = new Date().toISOString();
-            await sock.sendMessage(chatId, { text: `✅ Absen diperbarui: ${name}` });
-        } else {
-            // Add new participant
-            data[chatId].participants.push({
-                id: senderId,
-                name: name,
-                time: new Date().toISOString()
-            });
-            await sock.sendMessage(chatId, { text: `✅ Berhasil absen: ${name}` });
-        }
-
-        fs.writeFileSync(absenDataPath, JSON.stringify(data, null, 2));
-
-    } catch (error) {
-        console.error('Error in addAbsen:', error);
-        await sock.sendMessage(message.key.remoteJid, { text: 'Terjadi kesalahan saat melakukan absen.' });
+    if (!groupId.endsWith("@g.us")) {
+        return sock.sendMessage(groupId, { text: "Fitur absen hanya bisa dipakai di grup." }, { quoted: m });
     }
-}
 
-async function finishAbsen(sock, message) {
-    try {
-        const chatId = message.key.remoteJid;
-        const data = JSON.parse(fs.readFileSync(absenDataPath, 'utf8'));
-
-        if (!data[chatId]?.active) {
-            await sock.sendMessage(chatId, { text: 'Tidak ada absen yang aktif.' });
-            return;
-        }
-
-        const absenData = data[chatId];
-        let resultText = `*HASIL ABSEN*\n\n *${absenData.title}*\n\n`;
-
-        if (absenData.participants.length === 0) {
-            resultText += '❌ Belum ada yang absen\n';
-        } else {
-            resultText += `✅ Total peserta: ${absenData.participants.length}\n\n`;
-            absenData.participants.forEach((participant, index) => {
-                const time = new Date(participant.time).toLocaleString('id-ID');
-                resultText += `${index + 1}. ${participant.name} - ${time}\n`;
-            });
-        }
-
-        resultText += `\nDimulai: ${new Date(absenData.startTime).toLocaleString('id-ID')}`;
-        resultText += `\nDiakhiri: ${new Date().toLocaleString('id-ID')}`;
-
-        // Mark as inactive
-        data[chatId].active = false;
-        fs.writeFileSync(absenDataPath, JSON.stringify(data, null, 2));
-
-        await sock.sendMessage(chatId, { text: resultText });
-
-    } catch (error) {
-        console.error('Error in finishAbsen:', error);
-        await sock.sendMessage(message.key.remoteJid, { text: 'Terjadi kesalahan saat mengakhiri absen.' });
+    if (!absenSessions[groupId] || !absenSessions[groupId].active) {
+        return sock.sendMessage(groupId, { text: "❌ Absen belum dimulai. Gunakan `.startabsen` dulu." }, { quoted: m });
     }
+
+    const userText = text.trim();
+    if (!userText) {
+        return sock.sendMessage(groupId, { text: "Format salah! Gunakan `.absen <nama/teks>`" }, { quoted: m });
+    }
+
+    const session = absenSessions[groupId];
+    session.list.push(userText);
+
+    const listText = session.list.map((item, i) => `${i + 1}. ${item}`).join("\n");
+
+    await sock.sendMessage(groupId, {
+        text: `${session.title}\n${listText}`
+    }, { quoted: m });
 }
 
-module.exports = {
-    startAbsen,
-    addAbsen,
-    finishAbsen
-};
+async function finishAbsen(sock, m) {
+    const groupId = m.key.remoteJid;
+
+    if (!groupId.endsWith("@g.us")) {
+        return sock.sendMessage(groupId, { text: "Fitur absen hanya bisa dipakai di grup." }, { quoted: m });
+    }
+
+    if (!absenSessions[groupId] || !absenSessions[groupId].active) {
+        return sock.sendMessage(groupId, { text: "❌ Tidak ada absen yang sedang berlangsung." }, { quoted: m });
+    }
+
+    const session = absenSessions[groupId];
+    session.active = false;
+
+    const listText = session.list.length > 0
+        ? session.list.map((item, i) => `${i + 1}. ${item}`).join("\n")
+        : "Belum ada yang absen.";
+
+    await sock.sendMessage(groupId, {
+        text: `✅ Absen "${session.title}" selesai!\n\nDaftar Final:\n${listText}\n\nGunakan .startabsen lagi untuk memulai sesi baru.`
+    }, { quoted: m });
+}
+
+module.exports = { startAbsen, addAbsen, finishAbsen };
