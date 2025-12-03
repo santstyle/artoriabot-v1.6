@@ -21,8 +21,6 @@ Files containing "Artoria Bot":
 - toimage.js
   
 ## Command
-### Home Task
-- revisi main.js
 #### Owner
 - .mode
 - .autostatus
