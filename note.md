@@ -17,8 +17,13 @@ Files containing "Artoria Bot":
 - baileys_store.json
 
 
+# Toimage
+- simage.js
+- simage-alt.jss
+- toimage.js
+  
 ## Command
-#### OWNER
+#### Owner
 - .mode
 - .autostatus
 - .clearsession

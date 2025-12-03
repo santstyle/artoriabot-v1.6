@@ -54,7 +54,7 @@ const factCommand = require('./commands/fact');
 const weatherCommand = require('./commands/weather');
 const newsCommand = require('./commands/news');
 const kickCommand = require('./commands/kick');
-const simageCommand = require('./commands/simage');
+const toimageCommand = require('./commands/toimage');
 const attpCommand = require('./commands/attp');
 const { startHangman, guessLetter } = require('./commands/hangman');
 const { startTrivia, answerTrivia } = require('./commands/trivia');
@@ -273,12 +273,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
         let commandExecuted = false;
 
         switch (true) {
-            case userMessage === '.simage': {
+            case userMessage === '.toimage': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
-                    await simageCommand(sock, quotedMessage, chatId);
+                    await toimageCommand(sock, quotedMessage, chatId);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Please reply to a sticker with the .simage command to convert it.' });
+                    await sock.sendMessage(chatId, { text: 'Please reply to a sticker with the .toimage command to convert it.' });
                 }
                 commandExecuted = true;
                 break;

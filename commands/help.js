@@ -62,7 +62,7 @@ Berikut menu command yang tersedia di *Artoria Bot*:
 *IMAGE/STICKER*
 • .sticker <image>
 • .crop <image>
-• .simage <sticker>
+• .toimage <sticker>
 • .tgsticker <link>
 • .take <setwm>
 

@@ -11,7 +11,7 @@
     },
     "owner": "Created by SantStyle\nInstagram: https://www.instagram.com/santstyle.mv",
     "help": {
-      "menu": "Menu: .help, .menu, .ping, .alive, .owner, .tts, .joke, .quote, .fact, .weather, .news, .attp, .lyrics, .8ball, .groupinfo, .staff, .vv, .trt, .ss, .jid\nAdmin: .ban, .mute, .unmute, .delete, .kick, .warnings, .warn, .antilink, .antibadword, .clear, .tag, .tagall, .chatbot, .resetlink, .antitag, .welcome, .goodbye\nOwner: .mode, .autostatus, .clearsession, .antidelete, .cleartmp, .update, .setpp, .autoreact, .autotyping, .autoread\nImage: .blur, .simage, .sticker, .removebg, .remini, .crop, .tgsticker, .meme, .take, .emojimix\nGame: .tictactoe, .hangman, .guess, .trivia, .answer, .truth, .dare\nFun: .compliment, .insult, .flirt, .shayari, .goodnight, .roseday, .character, .wasted, .ship, .simp, .stupid\nDownloader: .play, .song, .instagram, .facebook, .tiktok, .video, .ytmp4"
+      "menu": "Menu: .help, .menu, .ping, .alive, .owner, .tts, .joke, .quote, .fact, .weather, .news, .attp, .lyrics, .8ball, .groupinfo, .staff, .vv, .trt, .ss, .jid\nAdmin: .ban, .mute, .unmute, .delete, .kick, .warnings, .warn, .antilink, .antibadword, .clear, .tag, .tagall, .chatbot, .resetlink, .antitag, .welcome, .goodbye\nOwner: .mode, .autostatus, .clearsession, .antidelete, .cleartmp, .update, .setpp, .autoreact, .autotyping, .autoread\nImage: .blur, .toimage, .sticker, .removebg, .remini, .crop, .tgsticker, .meme, .take, .emojimix\nGame: .tictactoe, .hangman, .guess, .trivia, .answer, .truth, .dare\nFun: .compliment, .insult, .flirt, .shayari, .goodnight, .roseday, .character, .wasted, .ship, .simp, .stupid\nDownloader: .play, .song, .instagram, .facebook, .tiktok, .video, .ytmp4"
     },
     "tts": {
       "usage": "Please provide text for TTS conversion.",
@@ -180,8 +180,8 @@
       "usage2": "❌ Please reply to an image or send an image with .blur as caption",
       "error": "❌ Failed to blur image. Please try again later."
     },
-    "simage": {
-      "usage": "Reply to a sticker with .simage to convert it.",
+    "toimage": {
+      "usage": "Reply to a sticker with .toimage to convert it.",
       "error": "An error occurred while converting the sticker."
     },
     "sticker": {

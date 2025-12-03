@@ -34,7 +34,7 @@ const convertSticker = async (sock, quotedMessage, chatId, sender, args) => {
 
         // Cek apakah stiker adalah animasi (GIF/WebP animasi)
         const isAnimated = stickerMessage.isAnimated || false;
-        const command = args[0]?.toLowerCase() || 'simage';
+        const command = args[0]?.toLowerCase() || 'toimage';
 
         // Download stiker
         const stickerFilePath = path.join(tempDir, `sticker_${Date.now()}.webp`);

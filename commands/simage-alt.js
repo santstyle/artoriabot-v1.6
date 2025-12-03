@@ -28,7 +28,7 @@ async function simageCommand(sock, quotedMessage, chatId, sender, args) {
         const stickerMessage = quotedMessage?.stickerMessage || quotedMessage?.message?.stickerMessage;
         if (!stickerMessage) {
             await sock.sendMessage(chatId, {
-                text: '⚠️ Balas pesan stiker dengan perintah *.simage* untuk mengonversi!'
+                text: '⚠️ Balas pesan stiker dengan perintah *.toimage* untuk mengonversi!'
             });
             return;
         }
