@@ -74,6 +74,7 @@ const { handleSsCommand } = require('./commands/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
 const videoCommand = require('./commands/video');
 const stickercropCommand = require('./commands/stickercrop');
+const { startAbsen, addAbsen, finishAbsen } = require('./commands/absen');
 // Global settings
 global.packname = settings.packname;
 global.author = settings.author;
@@ -910,21 +911,7 @@ async function handleAntideleteCommand(sock, chatId, message, match) {
     }
 }
 
-// Placeholder functions for missing commands
-async function startAbsen(sock, message, text) {
-    // Placeholder implementation
-    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur absen belum diimplementasikan.' });
-}
 
-async function addAbsen(sock, message, text) {
-    // Placeholder implementation
-    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur absen belum diimplementasikan.' });
-}
-
-async function finishAbsen(sock, message) {
-    // Placeholder implementation
-    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur absen belum diimplementasikan.' });
-}
 
 async function handleTicTacToeMove(sock, chatId, senderId, move) {
     // Placeholder implementation
