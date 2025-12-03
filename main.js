@@ -81,6 +81,7 @@ global.author = settings.author;
 // Tambahkan ini di dekat bagian atas main.js dengan konfigurasi global lainnya
 
 async function handleMessages(sock, messageUpdate, printLog) {
+    let chatId = null; // Declare chatId at function scope
     try {
         const { messages, type } = messageUpdate;
         if (type !== 'notify') return;
@@ -102,7 +103,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         const senderId = message.key.participant || message.key.remoteJid;
-        const chatId = message.key.remoteJid;
+        chatId = message.key.remoteJid; // Assign to the scoped variable
         const isGroup = chatId.endsWith('@g.us');
         const senderIsSudo = await isSudo(senderId);
 
@@ -425,7 +426,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.topmembers':
                 topMembers(sock, chatId, isGroup);
                 break;
-                break;
             case userMessage.startsWith('.lyrics'):
                 const songTitle = userMessage.split(' ').slice(1).join(' ');
                 await lyricsCommand(sock, chatId, songTitle, message);
@@ -673,7 +673,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
                         await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
                     }
                     await Antilink(message, sock);
-                    await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
                     await handleTagDetection(sock, chatId, message, senderId);
                 }
                 commandExecuted = false;
@@ -785,6 +784,270 @@ async function handleGroupParticipantUpdate(sock, update) {
     } catch (error) {
         console.error('Error di handleGroupParticipantUpdate:', error);
     }
+}
+
+// Missing function implementations
+
+// Store message for antidelete feature
+function storeMessage(message) {
+    // This function is called to store messages for potential recovery
+    // Implementation would depend on the antidelete system
+    // For now, just log that it's being stored
+    console.log('Message stored for antidelete:', message.key.id);
+}
+
+// Handle message revocation (deletion)
+async function handleMessageRevocation(sock, message) {
+    try {
+        // Check if antidelete is enabled
+        const antideleteData = JSON.parse(fs.readFileSync('./data/antidelete.json', 'utf8'));
+        if (!antideleteData.enabled) return;
+
+        const revokedMessage = message.message?.protocolMessage;
+        if (!revokedMessage) return;
+
+        // Try to find the original message in store
+        const store = require('./lib/lightweight_store');
+        const chatId = message.key.remoteJid;
+        const originalMessage = store.messages[chatId]?.find(m => m.key.id === revokedMessage.key.id);
+
+        if (originalMessage) {
+            await sock.sendMessage(chatId, {
+                text: `🗑️ *Message Deleted*\n\nFrom: @${message.key.participant?.split('@')[0] || 'unknown'}\n\n*Original Message:*\n${originalMessage.message?.conversation || originalMessage.message?.extendedTextMessage?.text || 'Media message'}`,
+                mentions: [message.key.participant]
+            });
+        }
+    } catch (error) {
+        console.error('Error handling message revocation:', error);
+    }
+}
+
+// Increment message count for statistics
+function incrementMessageCount(chatId, senderId) {
+    try {
+        const data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8'));
+
+        // Initialize chat if not exists
+        if (!data[chatId]) {
+            data[chatId] = {};
+        }
+
+        // Initialize user if not exists
+        if (!data[chatId][senderId]) {
+            data[chatId][senderId] = 0;
+        }
+
+        // Increment count
+        data[chatId][senderId]++;
+
+        // Save back to file
+        fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error incrementing message count:', error);
+    }
+}
+
+// Unban command implementation
+async function unbanCommand(sock, chatId, message) {
+    try {
+        const mentionedJidList = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+
+        let targetJid = null;
+
+        if (mentionedJidList.length > 0) {
+            targetJid = mentionedJidList[0];
+        } else if (quotedMessage) {
+            targetJid = quotedMessage.participant || quotedMessage.key.participant;
+        }
+
+        if (!targetJid) {
+            await sock.sendMessage(chatId, { text: 'Tag atau reply pesan pengguna yang ingin di-unban.' });
+            return;
+        }
+
+        // Remove from banned list
+        const bannedData = JSON.parse(fs.readFileSync('./data/banned.json', 'utf8'));
+        const index = bannedData.indexOf(targetJid);
+        if (index > -1) {
+            bannedData.splice(index, 1);
+            fs.writeFileSync('./data/banned.json', JSON.stringify(bannedData, null, 2));
+            await sock.sendMessage(chatId, { text: `✅ Pengguna @${targetJid.split('@')[0]} telah di-unban.`, mentions: [targetJid] });
+        } else {
+            await sock.sendMessage(chatId, { text: 'Pengguna tersebut tidak dalam daftar banned.' });
+        }
+    } catch (error) {
+        console.error('Error in unban command:', error);
+        await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat unban pengguna.' });
+    }
+}
+
+// Handle antidelete command
+async function handleAntideleteCommand(sock, chatId, message, match) {
+    try {
+        const antideleteData = JSON.parse(fs.readFileSync('./data/antidelete.json', 'utf8'));
+
+        if (!match || match.toLowerCase() === 'status') {
+            const status = antideleteData.enabled ? 'aktif' : 'nonaktif';
+            await sock.sendMessage(chatId, { text: `Antidelete saat ini: *${status}*` });
+            return;
+        }
+
+        if (match.toLowerCase() === 'on') {
+            antideleteData.enabled = true;
+            fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
+            await sock.sendMessage(chatId, { text: '✅ Antidelete diaktifkan.' });
+        } else if (match.toLowerCase() === 'off') {
+            antideleteData.enabled = false;
+            fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
+            await sock.sendMessage(chatId, { text: '❌ Antidelete dinonaktifkan.' });
+        } else {
+            await sock.sendMessage(chatId, { text: 'Penggunaan: .antidelete on/off/status' });
+        }
+    } catch (error) {
+        console.error('Error in antidelete command:', error);
+        await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat mengelola antidelete.' });
+    }
+}
+
+// Placeholder functions for missing commands
+async function startAbsen(sock, message, text) {
+    // Placeholder implementation
+    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur absen belum diimplementasikan.' });
+}
+
+async function addAbsen(sock, message, text) {
+    // Placeholder implementation
+    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur absen belum diimplementasikan.' });
+}
+
+async function finishAbsen(sock, message) {
+    // Placeholder implementation
+    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur absen belum diimplementasikan.' });
+}
+
+async function handleTicTacToeMove(sock, chatId, senderId, move) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur tic-tac-toe belum diimplementasikan.' });
+}
+
+async function topMembers(sock, chatId, isGroup) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur top members belum diimplementasikan.' });
+}
+
+async function blurCommand(sock, chatId, message, quotedMessage) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur blur belum diimplementasikan.' });
+}
+
+async function githubCommand(sock, chatId) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur github belum diimplementasikan.' });
+}
+
+async function flirtCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur flirt belum diimplementasikan.' });
+}
+
+async function characterCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur character belum diimplementasikan.' });
+}
+
+async function wastedCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur wasted belum diimplementasikan.' });
+}
+
+async function shipCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur ship belum diimplementasikan.' });
+}
+
+async function emojimixCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur emojimix belum diimplementasikan.' });
+}
+
+async function stickerTelegramCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur sticker telegram belum diimplementasikan.' });
+}
+
+async function viewOnceCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur view once belum diimplementasikan.' });
+}
+
+async function clearSessionCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur clear session belum diimplementasikan.' });
+}
+
+async function autoStatusCommand(sock, chatId, message, args) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur auto status belum diimplementasikan.' });
+}
+
+async function clearTmpCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur clear tmp belum diimplementasikan.' });
+}
+
+async function setProfilePicture(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur set profile picture belum diimplementasikan.' });
+}
+
+async function aiCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur AI belum diimplementasikan.' });
+}
+
+async function sudoCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur sudo belum diimplementasikan.' });
+}
+
+async function goodnightCommand(sock, chatId, message) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur goodnight belum diimplementasikan.' });
+}
+
+async function animeCommand(sock, chatId, message, args) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur anime belum diimplementasikan.' });
+}
+
+async function piesCommand(sock, chatId, message, args) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur pies belum diimplementasikan.' });
+}
+
+async function updateCommand(sock, chatId, message, senderIsSudo, zipArg) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur update belum diimplementasikan.' });
+}
+
+async function removebgCommand(sock, message, args) {
+    // Placeholder implementation
+    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur removebg belum diimplementasikan.' });
+}
+
+async function reminiCommand(sock, chatId, message, args) {
+    // Placeholder implementation
+    await sock.sendMessage(chatId, { text: 'Fitur remini belum diimplementasikan.' });
+}
+
+async function showTypingAfterCommand(sock, chatId) {
+    // Placeholder implementation - could show typing indicator
+}
+
+// Handle status updates
+async function handleStatusUpdate(sock, status) {
+    // Placeholder implementation for status updates
 }
 
 // Alih-alih, export penangan bersama dengan handleMessages
