@@ -1,4 +1,4 @@
-const jimp = require('jimp');
+const Jimp = require('jimp');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
 const fse = require('fs-extra');
@@ -73,7 +73,7 @@ const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
         const outputImagePath = path.join(tempDir, `image_${Date.now()}.png`);
 
         // Gunakan Jimp untuk memproses gambar
-        const image = await jimp.read(stickerFilePath);
+        const image = await Jimp.read(stickerFilePath);
 
         // Konversi ke PNG
         await image.writeAsync(outputImagePath);
