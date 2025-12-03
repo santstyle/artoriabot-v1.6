@@ -76,16 +76,29 @@ const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
     try {
         const outputImagePath = path.join(tempDir, `image_${Date.now()}.png`);
 
-        // Gunakan Jimp untuk konversi
-        const image = await Jimp.read(stickerFilePath);
-        await image.writeAsync(outputImagePath);
+        if (isAnimated) {
+            // Untuk stiker animasi, ambil frame pertama
+            await sharp(stickerFilePath, { animated: true, pages: 1 })
+                .toFormat('png')
+                .toFile(outputImagePath);
 
-        const imageBuffer = await fsPromises.readFile(outputImagePath);
-        const caption = isAnimated ? '🖼️ Stiker GIF berhasil dikonversi ke gambar (frame pertama)!' : '🖼️ Stiker berhasil dikonversi ke gambar!';
-        await sock.sendMessage(chatId, {
-            image: imageBuffer,
-            caption: caption
-        });
+            const imageBuffer = await fsPromises.readFile(outputImagePath);
+            await sock.sendMessage(chatId, {
+                image: imageBuffer,
+                caption: '🖼️ Stiker GIF berhasil dikonversi ke gambar (frame pertama)!'
+            });
+        } else {
+            // Untuk stiker biasa
+            await sharp(stickerFilePath)
+                .toFormat('png')
+                .toFile(outputImagePath);
+
+            const imageBuffer = await fsPromises.readFile(outputImagePath);
+            await sock.sendMessage(chatId, {
+                image: imageBuffer,
+                caption: '🖼️ Stiker berhasil dikonversi ke gambar!'
+            });
+        }
 
         scheduleFileDeletion(outputImagePath);
         scheduleFileDeletion(stickerFilePath);
