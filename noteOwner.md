@@ -1,5 +1,4 @@
 # Artoria Bot
-
 Files containing "Artoria Bot":
 - settings.js
 - session/creds.json
@@ -16,13 +15,14 @@ Files containing "Artoria Bot":
 - commands/github.js
 - baileys_store.json
 
-
 # Toimage
 - simage.js
 - simage-alt.jss
 - toimage.js
   
 ## Command
+### Home Task
+- revisi main.js
 #### Owner
 - .mode
 - .autostatus
