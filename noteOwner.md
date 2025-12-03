@@ -32,6 +32,3 @@ Files containing "Artoria Bot":
 - .update
 - .autoreact
 - .bc
-- .setpp <reply image>
-- .autotyping <on/off>
-- .autoread <on/off>

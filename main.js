@@ -3,7 +3,6 @@ require('./config.js');
 
 // === TAMBAHKAN BACKUP FFMPEG CONFIG DI SINI ===
 const { exec } = require('child_process');
-// HAPUS LINE INI: const path = require('path'); // <-- INI YANG DUPLIKAT
 
 // Ensure FFmpeg path is set (backup for main.js)
 if (!process.env.FFMPEG_PATH) {
@@ -24,8 +23,7 @@ const path = require('path'); // <-- INI SATU-SATUNYA DEKLARASI PATH DI MAIN.JS
 const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
 const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, isSudo } = require('./lib/index');
-const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, handleAutotypingForCommand, showTypingAfterCommand } = require('./commands/autotyping');
-const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
+
 
 // Command imports
 const tagAllCommand = require('./commands/tagall');
@@ -36,11 +34,10 @@ const muteCommand = require('./commands/mute');
 const unmuteCommand = require('./commands/unmute');
 const stickerCommand = require('./commands/sticker');
 const isAdmin = require('./lib/isAdmin');
+const { tictactoeCommand, handleTicTacToeMove } = require('./lib/tictactoe');
 const warnCommand = require('./commands/warn');
 const warningsCommand = require('./commands/warnings');
 const ttsCommand = require('./commands/tts');
-const { tictactoeCommand, handleTicTacToeMove } = require('./commands/tictactoe');
-const { incrementMessageCount, topMembers } = require('./commands/topmembers');
 const ownerCommand = require('./commands/owner');
 const deleteCommand = require('./commands/delete');
 const { handleAntilinkCommand, handleLinkDetection } = require('./commands/antilink');
@@ -55,45 +52,21 @@ const weatherCommand = require('./commands/weather');
 const newsCommand = require('./commands/news');
 const kickCommand = require('./commands/kick');
 const toimageCommand = require('./commands/toimage');
-const attpCommand = require('./commands/attp');
-const { startHangman, guessLetter } = require('./commands/hangman');
-const { startTrivia, answerTrivia } = require('./commands/trivia');
-const { complimentCommand } = require('./commands/compliment');
-const { insultCommand } = require('./commands/insult');
-const { eightBallCommand } = require('./commands/eightball');
 const { lyricsCommand } = require('./commands/lyrics');
-const { dareCommand } = require('./commands/dare');
-const { truthCommand } = require('./commands/truth');
 const { clearCommand } = require('./commands/clear');
 const pingCommand = require('./commands/ping');
 const aliveCommand = require('./commands/alive');
 const blurCommand = require('./commands/img-blur');
 const welcomeCommand = require('./commands/welcome');
 const goodbyeCommand = require('./commands/goodbye');
-const githubCommand = require('./commands/github');
 const { handleAntiBadwordCommand, handleBadwordDetection } = require('./lib/antibadword');
 const antibadwordCommand = require('./commands/antibadword');
 const { handleChatbotCommand, handleChatbotResponse } = require('./commands/chatbot');
 const takeCommand = require('./commands/take');
-const { flirtCommand } = require('./commands/flirt');
-const characterCommand = require('./commands/character');
-const wastedCommand = require('./commands/wasted');
-const shipCommand = require('./commands/ship');
 const groupInfoCommand = require('./commands/groupinfo');
 const resetlinkCommand = require('./commands/resetlink');
 const staffCommand = require('./commands/staff');
-const unbanCommand = require('./commands/unban');
-const emojimixCommand = require('./commands/emojimix');
-const viewOnceCommand = require('./commands/viewonce');
-const clearSessionCommand = require('./commands/clearsession');
-const { autoStatusCommand, handleStatusUpdate } = require('./commands/autostatus');
-const { simpCommand } = require('./commands/simp');
-const { stupidCommand } = require('./commands/stupid');
 const stickerTelegramCommand = require('./commands/stickertelegram');
-const textmakerCommand = require('./commands/textmaker');
-const { handleAntideleteCommand, handleMessageRevocation, storeMessage } = require('./commands/antidelete');
-const clearTmpCommand = require('./commands/cleartmp');
-const setProfilePicture = require('./commands/setpp');
 const setLangCommand = require('./commands/setlang');
 const broadcastCommand = require('./commands/broadcast');
 const instagramCommand = require('./commands/instagram');
@@ -101,24 +74,11 @@ const facebookCommand = require('./commands/facebook');
 const playCommand = require('./commands/play');
 const tiktokCommand = require('./commands/tiktok');
 const songCommand = require('./commands/song');
-const aiCommand = require('./commands/ai');
 const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
-const { goodnightCommand } = require('./commands/goodnight');
-const { shayariCommand } = require('./commands/shayari');
-const { rosedayCommand } = require('./commands/roseday');
-const imagineCommand = require('./commands/imagine');
 const videoCommand = require('./commands/video');
-const sudoCommand = require('./commands/sudo');
-const { miscCommand, handleHeart } = require('./commands/misc');
-const { animeCommand } = require('./commands/anime');
-const { piesCommand, piesAlias } = require('./commands/pies');
 const stickercropCommand = require('./commands/stickercrop');
-const updateCommand = require('./commands/update');
-const removebgCommand = require('./commands/removebg');
-const { reminiCommand } = require('./commands/remini');
-const { startAbsen, addAbsen, finishAbsen } = require("./commands/absen");
 // Global settings
 global.packname = settings.packname;
 global.author = settings.author;
@@ -133,8 +93,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const message = messages[0];
         if (!message?.message) return;
 
-        // Handle autoread functionality
-        await handleAutoread(sock, message);
+
 
         // Store message for antidelete feature
         if (message.message) {
@@ -198,9 +157,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         // Then check for command prefix
         if (!userMessage.startsWith('.')) {
-            // Show typing indicator if autotyping is enabled
-            await handleAutotypingForMessage(sock, chatId, userMessage);
-
             if (isGroup) {
                 // Process non-command messages first
                 await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
@@ -216,7 +172,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
         // List of owner commands
-        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.autotyping', '.autoread'];
+        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -811,14 +767,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.imagine') || userMessage.startsWith('.flux') || userMessage.startsWith('.dalle'): await imagineCommand(sock, chatId, message);
                 break;
             case userMessage === '.jid': await groupJidCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.autotyping'):
-                await autotypingCommand(sock, chatId, message);
-                commandExecuted = true;
-                break;
-            case userMessage.startsWith('.autoread'):
-                await autoreadCommand(sock, chatId, message);
-                commandExecuted = true;
                 break;
             case userMessage.startsWith('.heart'):
                 await handleHeart(sock, chatId, message);
