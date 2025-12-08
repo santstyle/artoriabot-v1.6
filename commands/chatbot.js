@@ -16,9 +16,9 @@ const API_CONFIGS = {
         free: true
     },
     // Pilihan 2: GROQ (GRATIS - alternatif)
-    GROK: {
+    GROQ: {
         url: 'https://api.groq.com/openai/v1/chat/completions',
-        apiKey: process.env.GROK_API_KEY,
+        apiKey: process.env.GROQ_API_KEY,
         model: 'llama-3.1-8b-instant',
         free: true
     },
