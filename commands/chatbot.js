@@ -32,7 +32,7 @@ const API_CONFIGS = {
 };
 
 // PILIH API YANG MAU DIPAKAI (ubah nilai ini)
-const ACTIVE_API = 'GROK'; // Bisa diganti ke 'GROQ' atau 'OPENAI'
+const ACTIVE_API = 'GROQ'; // Bisa diganti ke 'GROQ' atau 'OPENAI'
 
 // ====================== KELAS MANAGER ======================
 class ArtoriaPersonalityManager {
