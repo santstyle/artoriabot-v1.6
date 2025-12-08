@@ -1,12 +1,12 @@
-const isAdmin = require('../lib/isAdmin');  // Move isAdmin to helpers
+const isAdmin = require('../lib/isAdmin');
 
 async function tagAllCommand(sock, chatId, senderId) {
     try {
         const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
-        
+
         if (!isSenderAdmin && !isBotAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Only admins can use the .tagall command.'
+                text: 'Wah, cuma admin yang bisa pake command tagall nih'
             });
             return;
         }
@@ -16,14 +16,16 @@ async function tagAllCommand(sock, chatId, senderId) {
         const participants = groupMetadata.participants;
 
         if (!participants || participants.length === 0) {
-            await sock.sendMessage(chatId, { text: 'No participants found in the group.' });
+            await sock.sendMessage(chatId, {
+                text: 'Grupnya kosong nih, ga ada yang bisa di-tag'
+            });
             return;
         }
 
         // Create message with each member on a new line
-        let message = '🔊 *Group Members:*\n\n';
-        participants.forEach(participant => {
-            message += `@${participant.id.split('@')[0]}\n`; // Add \n for new line
+        let message = 'Tag buat semua member grup:\n\n';
+        participants.forEach((participant, index) => {
+            message += `${index + 1}. @${participant.id.split('@')[0]}\n`;
         });
 
         // Send message with mentions
@@ -33,9 +35,11 @@ async function tagAllCommand(sock, chatId, senderId) {
         });
 
     } catch (error) {
-        console.error('Error in tagall command:', error);
-        await sock.sendMessage(chatId, { text: 'Failed to tag all members.' });
+        console.error('Error di tagall:', error);
+        await sock.sendMessage(chatId, {
+            text: 'Gagal nge-tag member, coba lagi ya'
+        });
     }
 }
 
-module.exports = tagAllCommand;  // Export directly
+module.exports = tagAllCommand;

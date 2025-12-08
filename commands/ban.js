@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 async function banCommand(sock, chatId, message) {
     let userToBan;
@@ -14,31 +15,39 @@ async function banCommand(sock, chatId, message) {
 
     if (!userToBan) {
         await sock.sendMessage(chatId, {
-            text: 'Please mention the user or reply to their message to ban!'
+            text: 'Sebutin dong usernya yang mau di-ban? Mention atau reply chatnya~'
         });
         return;
     }
 
     try {
+        // Pastikan file banned.json ada
+        const bannedPath = path.join(__dirname, '../data/banned.json');
+        if (!fs.existsSync(bannedPath)) {
+            fs.writeFileSync(bannedPath, JSON.stringify([]));
+        }
+
         // Add user to banned list
-        const bannedUsers = JSON.parse(fs.readFileSync('./data/banned.json'));
+        const bannedUsers = JSON.parse(fs.readFileSync(bannedPath));
         if (!bannedUsers.includes(userToBan)) {
             bannedUsers.push(userToBan);
-            fs.writeFileSync('./data/banned.json', JSON.stringify(bannedUsers, null, 2));
+            fs.writeFileSync(bannedPath, JSON.stringify(bannedUsers, null, 2));
 
             await sock.sendMessage(chatId, {
-                text: `Successfully banned @${userToBan.split('@')[0]}!`,
+                text: `@${userToBan.split('@')[0]} udah di-ban ya~`,
                 mentions: [userToBan]
             });
         } else {
             await sock.sendMessage(chatId, {
-                text: `${userToBan.split('@')[0]} is already banned!`,
+                text: `@${userToBan.split('@')[0]} udah di-ban sebelumnya kok`,
                 mentions: [userToBan]
             });
         }
     } catch (error) {
-        console.error('Error in ban command:', error);
-        await sock.sendMessage(chatId, { text: 'Failed to ban user!' });
+        console.error('Error di ban command:', error);
+        await sock.sendMessage(chatId, {
+            text: 'Aduh, gagal ban user nih. Coba lagi ya~'
+        });
     }
 }
 

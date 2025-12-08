@@ -156,7 +156,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         if (!userMessage.startsWith('.')) {
             if (isGroup) {
                 // Proses pesan non-command terlebih dahulu
-                await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
+                await handleChatbotResponse(sock, chatId, message, rawText, senderId);
                 await Antilink(message, sock);
                 await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
                 await handleTagDetection(sock, chatId, message, senderId);

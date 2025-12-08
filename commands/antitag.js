@@ -4,7 +4,9 @@ const isAdmin = require('../lib/isAdmin');
 async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSenderAdmin) {
     try {
         if (!isSenderAdmin) {
-            await sock.sendMessage(chatId, { text: '```For Group Admins Only!```' });
+            await sock.sendMessage(chatId, {
+                text: 'Wah, cuma admin yang bisa atur antitag nih~'
+            });
             return;
         }
 
@@ -13,7 +15,7 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
         const action = args[0];
 
         if (!action) {
-            const usage = `\`\`\`ANTITAG SETUP\n\n${prefix}antitag on\n${prefix}antitag set delete | kick\n${prefix}antitag off\n\`\`\``;
+            const usage = `SETTINGAN ANTITAG\n\n${prefix}antitag on\n${prefix}antitag set delete | kick\n${prefix}antitag off`;
             await sock.sendMessage(chatId, { text: usage });
             return;
         }
@@ -22,54 +24,62 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
             case 'on':
                 const existingConfig = await getAntitag(chatId, 'on');
                 if (existingConfig?.enabled) {
-                    await sock.sendMessage(chatId, { text: '*_Antitag is already on_*' });
+                    await sock.sendMessage(chatId, {
+                        text: 'Antitag udah aktif dari tadi lho~'
+                    });
                     return;
                 }
                 const result = await setAntitag(chatId, 'on', 'delete');
-                await sock.sendMessage(chatId, { 
-                    text: result ? '*_Antitag has been turned ON_*' : '*_Failed to turn on Antitag_*' 
+                await sock.sendMessage(chatId, {
+                    text: result ? 'Yeay! antitag udah aku nyalain~' : 'Aduh, gagal nyalain antitag nih'
                 });
                 break;
 
             case 'off':
                 await removeAntitag(chatId, 'on');
-                await sock.sendMessage(chatId, { text: '*_Antitag has been turned OFF_*' });
+                await sock.sendMessage(chatId, {
+                    text: 'Oke, antitag udah aku matiin~'
+                });
                 break;
 
             case 'set':
                 if (args.length < 2) {
-                    await sock.sendMessage(chatId, { 
-                        text: `*_Please specify an action: ${prefix}antitag set delete | kick_*` 
+                    await sock.sendMessage(chatId, {
+                        text: `Sebutin dong aksinya: ${prefix}antitag set delete | kick`
                     });
                     return;
                 }
                 const setAction = args[1];
                 if (!['delete', 'kick'].includes(setAction)) {
-                    await sock.sendMessage(chatId, { 
-                        text: '*_Invalid action. Choose delete or kick._*' 
+                    await sock.sendMessage(chatId, {
+                        text: 'Wah, aksinya ga sesuai nih. Pilih delete atau kick aja ya~'
                     });
                     return;
                 }
                 const setResult = await setAntitag(chatId, 'on', setAction);
-                await sock.sendMessage(chatId, { 
-                    text: setResult ? `*_Antitag action set to ${setAction}_*` : '*_Failed to set Antitag action_*' 
+                await sock.sendMessage(chatId, {
+                    text: setResult ? `Hore! aksi antitag diatur jadi: ${setAction}` : 'Gagal atur aksi antitag nih'
                 });
                 break;
 
             case 'get':
                 const status = await getAntitag(chatId, 'on');
                 const actionConfig = await getAntitag(chatId, 'on');
-                await sock.sendMessage(chatId, { 
-                    text: `*_Antitag Configuration:_*\nStatus: ${status ? 'ON' : 'OFF'}\nAction: ${actionConfig ? actionConfig.action : 'Not set'}` 
+                await sock.sendMessage(chatId, {
+                    text: `Status Antitag:\nStatus: ${status ? 'ON' : 'OFF'}\nAksi: ${actionConfig ? actionConfig.action : 'Belum diatur'}`
                 });
                 break;
 
             default:
-                await sock.sendMessage(chatId, { text: `*_Use ${prefix}antitag for usage._*` });
+                await sock.sendMessage(chatId, {
+                    text: `Coba ketik ${prefix}antitag aja ya buat lihat caranya~`
+                });
         }
     } catch (error) {
-        console.error('Error in antitag command:', error);
-        await sock.sendMessage(chatId, { text: '*_Error processing antitag command_*' });
+        console.error('Error di antitag command:', error);
+        await sock.sendMessage(chatId, {
+            text: 'Aduh, ada error waktu atur antitag nih'
+        });
     }
 }
 
@@ -79,24 +89,24 @@ async function handleTagDetection(sock, chatId, message, senderId) {
         if (!antitagSetting || !antitagSetting.enabled) return;
 
         // Check if message contains mentions
-        const mentions = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || 
-                        message.message?.conversation?.match(/@\d+/g) ||
-                        [];
+        const mentions = message.message?.extendedTextMessage?.contextInfo?.mentionedJid ||
+            message.message?.conversation?.match(/@\d+/g) ||
+            [];
 
         // Check if it's a group message and has multiple mentions
         if (mentions.length > 0 && mentions.length >= 3) {
             // Get group participants to check if it's tagging most/all members
             const groupMetadata = await sock.groupMetadata(chatId);
             const participants = groupMetadata.participants || [];
-            
+
             // If mentions are more than 50% of group members, consider it as tagall
             const mentionThreshold = Math.ceil(participants.length * 0.5);
-            
+
             if (mentions.length >= mentionThreshold) {
-                console.log(`Antitag: Detected tagall in group ${chatId} by ${senderId}`);
-                
+                console.log(`Antitag: Deteksi tagall di grup ${chatId} oleh ${senderId}`);
+
                 const action = antitagSetting.action || 'delete';
-                
+
                 if (action === 'delete') {
                     // Delete the message
                     await sock.sendMessage(chatId, {
@@ -107,25 +117,25 @@ async function handleTagDetection(sock, chatId, message, senderId) {
                             participant: senderId
                         }
                     });
-                    
+
                     // Send warning
                     await sock.sendMessage(chatId, {
-                        text: `⚠️ *Tagall Detected!*.`
+                        text: `Hai, jangan tag semua member ya~`
                     }, { quoted: message });
-                    
+
                 } else if (action === 'kick') {
                     // Kick the user
                     await sock.groupParticipantsUpdate(chatId, [senderId], "remove");
-                    
+
                     // Send notification
                     await sock.sendMessage(chatId, {
-                        text: `🚫 *User Kicked!*\n\n@${senderId.split('@')[0]} has been kicked for tagging all members.`
+                        text: `@${senderId.split('@')[0]} di-kick karena tag semua member~`
                     });
                 }
             }
         }
     } catch (error) {
-        console.error('Error in tag detection:', error);
+        console.error('Error di tag detection:', error);
     }
 }
 
@@ -133,4 +143,3 @@ module.exports = {
     handleAntitagCommand,
     handleTagDetection
 };
-

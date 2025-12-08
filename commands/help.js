@@ -14,29 +14,6 @@ or simply chat with SantStyle if they are in the same group.
 
 Here are the available command menus in Artoria Bot:
 
-*LANGUAGE*
-• .setlang id
-• .setlang en
-
-*GENERAL*
-• .help
-• .menu
-• .startabsen
-• .absen
-• .finishabsen
-• .ping
-• .alive
-• .owner
-• .joke
-• .meme
-• .quote
-• .fact
-• .news
-• .groupinfo
-• .staff
-• .weather <city>
-• .lyrics <song_title>
-
 *ADMIN*
 • .antitag <on/off>
 • .welcome <on/off>
@@ -57,6 +34,23 @@ Here are the available command menus in Artoria Bot:
 • .chatbot
 • .resetlink
 
+*GENERAL*
+• .help
+• .menu
+• .startabsen
+• .ping
+• .alive
+• .owner
+• .joke
+• .meme
+• .quote
+• .fact
+• .news
+• .groupinfo
+• .staff
+• .weather <city>
+• .lyrics <song_title>
+
 *IMAGE/STICKER*
 • .sticker <image>
 • .crop <image>
@@ -66,10 +60,10 @@ Here are the available command menus in Artoria Bot:
 
 
 *DOWNLOADER*
-• .play <song_name>
+• .play <link>
 • .song <song_name>
 • .instagram <link>
-• .video <song_name>
+• .video <link>
 • .facebook <link>
 • .tiktok <link>
 • .ytmp4 <link>

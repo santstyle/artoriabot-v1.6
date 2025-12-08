@@ -1,14 +1,19 @@
 async function clearCommand(sock, chatId) {
     try {
-        const message = await sock.sendMessage(chatId, { text: 'Clearing bot messages...' });
-        const messageKey = message.key; // Get the key of the message the bot just sent
-        
-        // Now delete the bot's message
+        // Kirim pesan dulu
+        const message = await sock.sendMessage(chatId, {
+            text: 'Bentar ya, lagi aku bersihin pesanku~'
+        });
+        const messageKey = message.key;
+
+        // Hapus pesan bot
         await sock.sendMessage(chatId, { delete: messageKey });
-        
+
     } catch (error) {
-        console.error('Error clearing messages:', error);
-        await sock.sendMessage(chatId, { text: 'An error occurred while clearing messages.' });
+        console.error('Error di clear command:', error);
+        await sock.sendMessage(chatId, {
+            text: 'Aduh, gagal bersihin pesan nih. Coba lagi ya~'
+        });
     }
 }
 

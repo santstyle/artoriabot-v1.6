@@ -31,7 +31,7 @@ async function stickerCommand(sock, chatId, message) {
 
     if (!mediaMessage) {
         await sock.sendMessage(chatId, {
-            text: 'Please reply to an image/video with .sticker, or send an image/video with .sticker as the caption.'
+            text: 'Haii~ mau bikin sticker ya? Reply gambar atau video pake .sticker dong~ Atau kirim gambarnya langsung pake caption .sticker'
         }, { quoted: messageToQuote });
         return;
     }
@@ -44,10 +44,15 @@ async function stickerCommand(sock, chatId, message) {
 
         if (!mediaBuffer) {
             await sock.sendMessage(chatId, {
-                text: 'Failed to download media. Please try again.'
+                text: 'Wah, gambarnya ga bisa didownload nih. Coba kirim ulang ya~'
             });
             return;
         }
+
+        // Kasih tau kalau lagi proses
+        await sock.sendMessage(chatId, {
+            text: 'Bentar ya, lagi aku jadikan sticker~'
+        }, { quoted: messageToQuote });
 
         // Create temp directory if it doesn't exist
         const tmpDir = path.join(process.cwd(), 'tmp');
@@ -75,7 +80,7 @@ async function stickerCommand(sock, chatId, message) {
         await new Promise((resolve, reject) => {
             exec(ffmpegCommand, (error) => {
                 if (error) {
-                    console.error('FFmpeg error:', error);
+                    console.error('Aduh, ffmpeg error nih:', error);
                     reject(error);
                 } else resolve();
             });
@@ -117,13 +122,13 @@ async function stickerCommand(sock, chatId, message) {
             fs.unlinkSync(tempInput);
             fs.unlinkSync(tempOutput);
         } catch (err) {
-            console.error('Error cleaning up temp files:', err);
+            console.error('Wah, error waktu bersihin file temp nih:', err);
         }
 
     } catch (error) {
-        console.error('Error in sticker command:', error);
+        console.error('Yah, error di sticker command nih:', error);
         await sock.sendMessage(chatId, {
-            text: 'Failed to create sticker! Try again later.'
+            text: 'Aduh, gagal bikin stickernya. Coba lagi ya~ Kalau masih gagal, mungkin gambarnya terlalu besar'
         });
     }
 }

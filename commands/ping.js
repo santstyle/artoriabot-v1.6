@@ -10,10 +10,10 @@ function formatTime(seconds) {
     seconds = Math.floor(seconds % 60);
 
     let time = '';
-    if (days > 0) time += `${days}d `;
-    if (hours > 0) time += `${hours}h `;
-    if (minutes > 0) time += `${minutes}m `;
-    if (seconds > 0 || time === '') time += `${seconds}s`;
+    if (days > 0) time += `${days}hari `;
+    if (hours > 0) time += `${hours}jam `;
+    if (minutes > 0) time += `${minutes}menit `;
+    if (seconds > 0 || time === '') time += `${seconds}detik`;
 
     return time.trim();
 }
@@ -21,7 +21,7 @@ function formatTime(seconds) {
 async function pingCommand(sock, chatId, message) {
     try {
         const start = Date.now();
-        await sock.sendMessage(chatId, { text: 'Testing ping...' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Cek ping dulu ya~' }, { quoted: message });
         const end = Date.now();
         const ping = Math.round(end - start);
 
@@ -32,17 +32,21 @@ async function pingCommand(sock, chatId, message) {
         const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
 
         const botInfo = `
-┏━━〔 Artoria Bot Status 〕━━┓
-┃  Ping     : ${ping} ms
-┃  Uptime   : ${uptimeFormatted}
-┃  Memory   : ${usedMemory} MB / ${totalMemory} MB
-┃  Version  : v${settings.version}
-┗━━━━━━━━━━━━━━━━━━━━━━━┛`.trim();
+Status Artoria Bot
+
+Ping     : ${ping} ms
+Uptime   : ${uptimeFormatted}
+Memory   : ${usedMemory} MB / ${totalMemory} MB
+Version  : v${settings.version}
+
+Aku masih sehat dan siap bantu!`.trim();
 
         await sock.sendMessage(chatId, { text: botInfo }, { quoted: message });
     } catch (error) {
-        console.error('Error in ping command:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to get bot status.' });
+        console.error('Error di ping command:', error);
+        await sock.sendMessage(chatId, {
+            text: 'Aduh, gagal cek status nih. Coba lagi ya~'
+        });
     }
 }
 

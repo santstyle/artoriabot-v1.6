@@ -4,12 +4,16 @@ async function deleteCommand(sock, chatId, message, senderId) {
     const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
 
     if (!isBotAdmin) {
-        await sock.sendMessage(chatId, { text: 'I need to be an admin to delete messages.' });
+        await sock.sendMessage(chatId, {
+            text: 'Aku harus jadi admin dulu biar bisa hapus pesan~'
+        });
         return;
     }
 
     if (!isSenderAdmin) {
-        await sock.sendMessage(chatId, { text: 'Only admins can use the .delete command.' });
+        await sock.sendMessage(chatId, {
+            text: 'Wah, cuma admin yang bisa hapus pesan nih~'
+        });
         return;
     }
 
@@ -17,9 +21,18 @@ async function deleteCommand(sock, chatId, message, senderId) {
     const quotedParticipant = message.message?.extendedTextMessage?.contextInfo?.participant;
 
     if (quotedMessage) {
-        await sock.sendMessage(chatId, { delete: { remoteJid: chatId, fromMe: false, id: quotedMessage, participant: quotedParticipant } });
+        await sock.sendMessage(chatId, {
+            delete: {
+                remoteJid: chatId,
+                fromMe: false,
+                id: quotedMessage,
+                participant: quotedParticipant
+            }
+        });
     } else {
-        await sock.sendMessage(chatId, { text: 'Please reply to a message you want to delete.' });
+        await sock.sendMessage(chatId, {
+            text: 'Reply pesan yang mau dihapus dong~'
+        });
     }
 }
 

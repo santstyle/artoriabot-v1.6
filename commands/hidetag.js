@@ -47,7 +47,7 @@ async function hidetagCommand(sock, m, prefix) {
         } else {
             console.log("Processing DIRECT message");
             // Jika tidak reply, gunakan teks setelah command atau default
-            const finalText = textAfterCommand || "Hidetag semua member!";
+            const finalText = textAfterCommand || "Haiiii izin tag semua member yaaa!";
 
             await sock.sendMessage(m.key.remoteJid, {
                 text: finalText,

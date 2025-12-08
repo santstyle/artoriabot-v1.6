@@ -15,27 +15,38 @@ async function resetlinkCommand(sock, chatId, senderId) {
             .includes(botId);
 
         if (!isAdmin) {
-            await sock.sendMessage(chatId, { text: '❌ Only admins can use this command!' });
+            await sock.sendMessage(chatId, {
+                text: 'Wah, cuma admin yang bisa reset link grup nih~'
+            });
             return;
         }
 
         if (!isBotAdmin) {
-            await sock.sendMessage(chatId, { text: '❌ Bot must be admin to reset group link!' });
+            await sock.sendMessage(chatId, {
+                text: 'Aku harus jadi admin dulu biar bisa reset linknya~'
+            });
             return;
         }
 
+        // Kasih tau kalau lagi proses
+        await sock.sendMessage(chatId, {
+            text: 'Bentar ya, lagi aku reset linknya~'
+        });
+
         // Reset the group link
         const newCode = await sock.groupRevokeInvite(chatId);
-        
+
         // Send the new link
-        await sock.sendMessage(chatId, { 
-            text: `✅ Group link has been successfully reset\n\n📌 New link:\nhttps://chat.whatsapp.com/${newCode}`
+        await sock.sendMessage(chatId, {
+            text: `Yeay! Link grup udah direset~\n\nLink baru:\nhttps://chat.whatsapp.com/${newCode}\n\nShare link yang ini ya, yang lama udah ga bisa dipakai~`
         });
 
     } catch (error) {
-        console.error('Error in resetlink command:', error);
-        await sock.sendMessage(chatId, { text: 'Failed to reset group link!' });
+        console.error('Error di resetlink command:', error);
+        await sock.sendMessage(chatId, {
+            text: 'Aduh, gagal reset link grup nih. Coba lagi ya~'
+        });
     }
 }
 
-module.exports = resetlinkCommand; 
+module.exports = resetlinkCommand;

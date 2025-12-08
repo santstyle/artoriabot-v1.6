@@ -11,7 +11,7 @@ async function setLangCommand(sock, chatId, message, args) {
     try {
         if (!args || args.length === 0) {
             await sock.sendMessage(chatId, {
-                text: 'Usage: .setlang <en/id>\nExample: .setlang en'
+                text: 'Cara pakai: .setlang <en/id>\nContoh: .setlang id\n\nen = English\nid = Indonesia'
             }, { quoted: message });
             return;
         }
@@ -21,7 +21,7 @@ async function setLangCommand(sock, chatId, message, args) {
 
         if (!availableLangs.includes(selectedLang)) {
             await sock.sendMessage(chatId, {
-                text: `Invalid language code. Available options: ${availableLangs.join(', ')}`
+                text: `Wah, kode bahasa nya ga ada nih~ Pilihan yang ada: ${availableLangs.join(', ')}`
             }, { quoted: message });
             return;
         }
@@ -29,30 +29,27 @@ async function setLangCommand(sock, chatId, message, args) {
         const success = langHelper.setLang(chatId, selectedLang);
         if (!success) {
             await sock.sendMessage(chatId, {
-                text: 'Failed to set language. Please try again.'
+                text: 'Aduh, gagal atur bahasa nih. Coba lagi ya~'
             }, { quoted: message });
             return;
         }
 
-        // Get language messages for confirmation
-        const langMessages = langHelper.getLang(chatId);
-
         // Confirmation messages for English and Indonesian
         const confirmationMessages = {
-            en: 'Language set to English.',
-            id: 'Bahasa diubah ke Indonesia.'
+            en: 'Yeay! Now I speak English~',
+            id: 'Hore! Sekarang aku pakai bahasa Indonesia~'
         };
 
-        const confirmationText = confirmationMessages[selectedLang] || 'Language set.';
+        const confirmationText = confirmationMessages[selectedLang] || 'Bahasa sudah diatur~';
 
         await sock.sendMessage(chatId, {
             text: confirmationText
         }, { quoted: message });
 
     } catch (error) {
-        console.error('Error in setlang command:', error);
+        console.error('Error di setlang command:', error);
         await sock.sendMessage(chatId, {
-            text: 'An error occurred while setting language.'
+            text: 'Wah, ada error waktu atur bahasa nih. Coba lagi ya~'
         }, { quoted: message });
     }
 }

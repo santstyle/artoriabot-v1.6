@@ -13,11 +13,11 @@ async function handleTranslateCommand(sock, chatId, message, match) {
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         if (quotedMessage) {
             // Get text from quoted message
-            textToTranslate = quotedMessage.conversation || 
-                            quotedMessage.extendedTextMessage?.text || 
-                            quotedMessage.imageMessage?.caption || 
-                            quotedMessage.videoMessage?.caption || 
-                            '';
+            textToTranslate = quotedMessage.conversation ||
+                quotedMessage.extendedTextMessage?.text ||
+                quotedMessage.imageMessage?.caption ||
+                quotedMessage.videoMessage?.caption ||
+                '';
 
             // Get language from command
             lang = match.trim();
@@ -26,7 +26,7 @@ async function handleTranslateCommand(sock, chatId, message, match) {
             const args = match.trim().split(' ');
             if (args.length < 2) {
                 return sock.sendMessage(chatId, {
-                    text: `*TRANSLATOR*\n\nUsage:\n1. Reply to a message with: .translate <lang> or .trt <lang>\n2. Or type: .translate <text> <lang> or .trt <text> <lang>\n\nExample:\n.translate hello fr\n.trt hello fr\n\nLanguage codes:\nfr - French\nes - Spanish\nde - German\nit - Italian\npt - Portuguese\nru - Russian\nja - Japanese\nko - Korean\nzh - Chinese\nar - Arabic\nhi - Hindi`,
+                    text: `TRANSLATOR MANIS\n\nCara pakai:\n1. Reply pesan dengan: .translate <bahasa> atau .trt <bahasa>\n2. Atau ketik: .translate <teks> <bahasa> atau .trt <teks> <bahasa>\n\nContoh:\n.translate halo dunia fr\n.trt halo dunia fr\n\nKode bahasa:\nfr - Perancis\nes - Spanyol\nde - Jerman\nit - Italia\npt - Portugis\nru - Rusia\nja - Jepang\nko - Korea\nzh - China\nar - Arab\nhi - Hindi\nid - Indonesia\nen - Inggris`,
                     quoted: message
                 });
             }
@@ -37,10 +37,16 @@ async function handleTranslateCommand(sock, chatId, message, match) {
 
         if (!textToTranslate) {
             return sock.sendMessage(chatId, {
-                text: '❌ No text found to translate. Please provide text or reply to a message.',
+                text: 'Hmm, teksnya mana nih? Kasih dong teks yang mau diterjemahin atau reply pesannya',
                 quoted: message
             });
         }
+
+        // Kasih tau lagi kalau lagi proses
+        await sock.sendMessage(chatId, {
+            text: 'Bentar ya, lagi aku terjemahin dulu',
+            quoted: message
+        });
 
         // Try multiple translation APIs in sequence
         let translatedText = null;
@@ -90,20 +96,20 @@ async function handleTranslateCommand(sock, chatId, message, match) {
         }
 
         if (!translatedText) {
-            throw new Error('All translation APIs failed');
+            throw new Error('Semua API penerjemah gagal');
         }
 
         // Send translation
         await sock.sendMessage(chatId, {
-            text: `${translatedText}`,
+            text: `Terjemahan Selesai!\n\nAsli: ${textToTranslate}\nHasil: ${translatedText}\n\nTerjemahan udah siap, semoga membantu ya`,
         }, {
             quoted: message
         });
 
     } catch (error) {
-        console.error('❌ Error in translate command:', error);
+        console.error('Aduh, error di translate command nih:', error);
         await sock.sendMessage(chatId, {
-            text: '❌ Failed to translate text. Please try again later.\n\nUsage:\n1. Reply to a message with: .translate <lang> or .trt <lang>\n2. Or type: .translate <text> <lang> or .trt <text> <lang>',
+            text: 'Yah, gagal nerjemahin nih. Kayaknya API nya lagi cape. Coba lagi ya nanti',
             quoted: message
         });
     }
@@ -111,4 +117,4 @@ async function handleTranslateCommand(sock, chatId, message, match) {
 
 module.exports = {
     handleTranslateCommand
-}; 
+};
